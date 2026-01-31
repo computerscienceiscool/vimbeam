@@ -1,6 +1,6 @@
 # vimbeam
 
-A Neovim plugin for real-time collaborative editing using [Automerge](https://automerge.org/) CRDTs.
+A Neovim plugin that allows Neovim users to collaborate in real time with other Neovim users and web users via [Automerge](https://automerge.org/) CRDTs.
 
 ## Features
 
