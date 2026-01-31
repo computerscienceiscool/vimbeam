@@ -27,7 +27,7 @@ let awarenessWs = null;
 let awarenessHeartbeat = null;
 let awarenessNotified = false;
 let userId = null;
-let userName = 'nvim-user';
+let userName = 'vimbeam-user';
 let userColor = '#88cc88';
 let currentDocId = null;
 let isApplyingRemote = false;
@@ -35,7 +35,7 @@ let currentSelection = { anchor: 0 };
 let changeHandler = null;  // Track change listener for cleanup
 
 // Storage directory for Automerge data
-const storageDir = path.join(os.homedir(), '.local', 'share', 'collab-editor', 'automerge-data');
+const storageDir = path.join(os.homedir(), '.local', 'share', 'vimbeam', 'automerge-data');
 
 // Ensure storage directory exists
 if (!fs.existsSync(storageDir)) {
@@ -90,7 +90,7 @@ function contentToString(doc) {
  * Generate a simple user ID
  */
 function generateUserId() {
-  return 'nvim-' + Math.random().toString(36).substring(2, 10);
+  return 'beam-' + Math.random().toString(36).substring(2, 10);
 }
 
 /**
@@ -375,7 +375,7 @@ async function handleMessage(msg) {
       }
 
       case 'set_name': {
-        userName = msg.name || 'nvim-user';
+        userName = msg.name || 'vimbeam-user';
         sendAwareness();
         send({ type: 'name_set', name: userName });
         log(`Name set to: ${userName}`);

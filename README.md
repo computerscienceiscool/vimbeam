@@ -35,7 +35,7 @@ For the awareness server, you'll need a simple WebSocket broadcast server. A min
 npx y-websocket --port 1235
 ```
 
-Or run both from the companion [vimbeam](https://github.com/computerscienceiscool/vimbeam) project which includes pre-configured servers.
+See [docs/PROTOCOL.md](docs/PROTOCOL.md) for details on running your own servers.
 
 ## Installation
 
