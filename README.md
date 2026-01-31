@@ -16,6 +16,27 @@ A Neovim plugin for real-time collaborative editing using [Automerge](https://au
 - A running Automerge sync server (for document sync)
 - A running awareness server (for cursor sync)
 
+## Server Setup
+
+This plugin requires two WebSocket servers:
+
+1. **Automerge Sync Server** - Handles document synchronization using the Automerge sync protocol
+2. **Awareness Server** - Broadcasts cursor positions and user presence
+
+You can use [automerge-repo-sync-server](https://github.com/automerge/automerge-repo-sync-server) for the sync server:
+
+```bash
+npx @automerge/automerge-repo-sync-server --port 1234
+```
+
+For the awareness server, you'll need a simple WebSocket broadcast server. A minimal example:
+
+```bash
+npx y-websocket --port 1235
+```
+
+Or run both from the companion [collab-editor](https://github.com/computerscienceiscool/collab-editor) project which includes pre-configured servers.
+
 ## Installation
 
 ### lazy.nvim
@@ -48,6 +69,21 @@ use {
     })
   end,
 }
+```
+
+### vim-plug
+
+```vim
+Plug 'computerscienceiscool/collab-editor-neovim', { 'do': 'cd node-helper && npm install' }
+```
+
+Then in your `init.lua`:
+
+```lua
+require('collab-editor').setup({
+  sync_url = 'ws://localhost:1234',
+  awareness_url = 'ws://localhost:1235',
+})
 ```
 
 ### Manual

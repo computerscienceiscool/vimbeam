@@ -2,6 +2,9 @@
 node_modules/
 node-helper/node_modules/
 
+# Local state
+.claude/
+
 # npm files
 package-lock.json
 npm-debug.log*
