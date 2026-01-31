@@ -1,0 +1,17 @@
+{
+  "name": "collab-editor-nvim-helper",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Node.js helper for Neovim collaborative editing via Automerge",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@automerge/automerge": "^2.2.8",
+    "@automerge/automerge-repo": "^2.5.1",
+    "@automerge/automerge-repo-network-websocket": "^2.5.1",
+    "@automerge/automerge-repo-storage-nodefs": "^2.5.1",
+    "ws": "^8.18.0"
+  }
+}

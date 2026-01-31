@@ -1,0 +1,14 @@
+# Node modules
+node_modules/
+node-helper/node_modules/
+
+# npm files
+package-lock.json
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build outputs
+*.log
+dist/
+build/
