@@ -19,9 +19,10 @@ M.state = {
   after_connect = nil, -- deferred action to run after helper connects
   cursor_highlights = {}, -- memoized highlight groups keyed by user
   autocmd_group = nil,  -- augroup for buffer autocmds (cleanup on detach)
-    -- NEW: Storm-specific state
+  -- NEW: Storm-specific state
   mode = nil,  -- 'automerge' or 'storm'
   project_id = nil,  -- Storm project ID
+  storm_connected = false,
   chat_bufnr = nil,  -- Storm chat display buffer
   file_selections = {},  -- Storm file In/Out tracking {filename -> {input=bool, output=bool}}
   active_queries = {},  -- Storm pending queries {queryID -> {...}}
@@ -425,17 +426,15 @@ function M.show_color_picker()
   end)
 end
 
--- Connect to collaboration server
-function M.connect()
-  if M.state.connected then
-    vim.notify('[vimbeam] Already connected', vim.log.levels.WARN)
-    return
+function M.ensure_helper_running()
+  if M.state.job_id and M.state.job_id > 0 then
+    return true
   end
 
   local helper_path = M.config.node_helper_path
   if not helper_path or vim.fn.filereadable(helper_path) == 0 then
     vim.notify('[vimbeam] Node helper not found at: ' .. (helper_path or 'nil'), vim.log.levels.ERROR)
-    return
+    return false
   end
 
   -- Start node helper process
@@ -462,6 +461,20 @@ function M.connect()
   if M.state.job_id <= 0 then
     vim.notify('[vimbeam] Failed to start helper', vim.log.levels.ERROR)
     M.state.job_id = nil
+    return false
+  end
+
+  return true
+end
+
+-- Connect to collaboration server
+function M.connect()
+  if M.state.connected then
+    vim.notify('[vimbeam] Already connected', vim.log.levels.WARN)
+    return
+  end
+
+  if not M.ensure_helper_running() then
     return
   end
 
@@ -482,6 +495,23 @@ function M.connect()
     M.set_color(M.config.user_color)
   end
 end
+
+function M.list_storm_projects()
+  if not M.config.storm_url then
+    vim.notify('[vimbeam] storm_url not configured', vim.log.levels.ERROR)
+    return
+  end
+  vim.notify('[vimbeam] StormProject listing not implemented yet. Use :StormConnect <project-id>.', vim.log.levels.WARN)
+end
+
+function M.open_storm_project(project_id)
+  if not project_id or project_id == '' then
+    vim.notify('[vimbeam] Project ID required', vim.log.levels.ERROR)
+    return
+  end
+  vim.notify('[vimbeam] StormProject open not implemented yet. Use :StormConnect ' .. project_id .. '.', vim.log.levels.WARN)
+end
+
 -- NEW: Storm connect
 function M.connect_storm(project_id)
   if not project_id or project_id == '' then
@@ -489,8 +519,8 @@ function M.connect_storm(project_id)
     return
   end
 
-  if M.state.connected then
-    vim.notify('[vimbeam] Already connected', vim.log.levels.WARN)
+  if M.state.storm_connected then
+    vim.notify('[vimbeam] Storm already connected', vim.log.levels.WARN)
     return
   end
 
@@ -499,36 +529,7 @@ function M.connect_storm(project_id)
     return
   end
 
-  local helper_path = M.config.node_helper_path
-  if not helper_path or vim.fn.filereadable(helper_path) == 0 then
-    vim.notify('[vimbeam] Node helper not found at: ' .. (helper_path or 'nil'), vim.log.levels.ERROR)
-    return
-  end
-
-  -- Start helper process (same as Automerge)
-  M.state.job_id = vim.fn.jobstart({ 'node', helper_path }, {
-    on_stdout = function(_, data, _)
-      M.on_stdout(data)
-    end,
-    on_stderr = function(_, data, _)
-      for _, line in ipairs(data) do
-        if line ~= '' then
-          if M.config.debug then
-            vim.notify('[vimbeam] Helper: ' .. line, vim.log.levels.DEBUG)
-          end
-        end
-      end
-    end,
-    on_exit = function(_, code, _)
-      M.on_exit(code)
-    end,
-    stdout_buffered = false,
-    stderr_buffered = false,
-  })
-
-  if M.state.job_id <= 0 then
-    vim.notify('[vimbeam] Failed to start helper', vim.log.levels.ERROR)
-    M.state.job_id = nil
+  if not M.ensure_helper_running() then
     return
   end
 
@@ -555,11 +556,32 @@ function M.connect_storm(project_id)
   M.send({
     type = 'storm_connect',
     stormUrl = M.config.storm_url,
-    name = M.config.user_name,
     projectId = project_id,
     name = M.config.user_name,
     color = M.config.user_color,
   })
+end
+
+function M.disconnect_storm()
+  if not M.state.job_id then
+    vim.notify('[vimbeam] Not connected', vim.log.levels.WARN)
+    return
+  end
+
+  M.send({ type = 'storm_disconnect' })
+  M.state.storm_connected = false
+  M.state.project_id = nil
+  M.state.chat_bufnr = nil
+  M.state.file_selections = {}
+  M.state.active_queries = {}
+  M.state.other_users = {}
+
+  if not M.state.connected then
+    vim.fn.jobstop(M.state.job_id)
+    M.state.job_id = nil
+  end
+
+  vim.notify('[vimbeam] Storm disconnected', vim.log.levels.INFO)
 end
 
 -- Disconnect from server
@@ -571,8 +593,6 @@ function M.disconnect()
 
   M.send({ type = 'disconnect' })
 
-  vim.fn.jobstop(M.state.job_id)
-  M.state.job_id = nil
   M.state.connected = false
   M.state.doc_id = nil
   M.state.user_id = nil
@@ -580,6 +600,11 @@ function M.disconnect()
 
   if M.state.bufnr then
     M.detach_buffer()
+  end
+
+  if not M.state.storm_connected then
+    vim.fn.jobstop(M.state.job_id)
+    M.state.job_id = nil
   end
 
   vim.notify('[vimbeam] Disconnected', vim.log.levels.INFO)
@@ -667,11 +692,31 @@ function M.handle_message(msg)
       pcall(cb)
     end
 
+  elseif msg.type == 'storm_connected' then
+    M.state.storm_connected = true
+    if msg.projectId then
+      M.state.project_id = msg.projectId
+    end
+    vim.notify('[vimbeam] Storm connected: ' .. (M.state.project_id or 'unknown'), vim.log.levels.INFO)
+
   elseif msg.type == 'disconnected' then
     M.state.connected = false
     M.state.doc_id = nil
     vim.notify('[vimbeam] Disconnected', vim.log.levels.INFO)
     M.state.after_connect = nil
+
+  elseif msg.type == 'storm_disconnected' then
+    M.state.storm_connected = false
+    M.state.project_id = nil
+    M.state.chat_bufnr = nil
+    M.state.file_selections = {}
+    M.state.active_queries = {}
+    M.state.other_users = {}
+    if not M.state.connected and M.state.job_id then
+      vim.fn.jobstop(M.state.job_id)
+      M.state.job_id = nil
+    end
+    vim.notify('[vimbeam] Storm disconnected', vim.log.levels.INFO)
 
   elseif msg.type == 'created' then
     M.state.doc_id = msg.docId
@@ -946,6 +991,12 @@ function M.on_exit(code)
   M.state.connected = false
   M.state.doc_id = nil
   M.state.after_connect = nil
+  M.state.storm_connected = false
+  M.state.project_id = nil
+  M.state.chat_bufnr = nil
+  M.state.file_selections = {}
+  M.state.active_queries = {}
+  M.state.other_users = {}
   
   if code ~= 0 then
     vim.notify('[vimbeam] Helper exited with code ' .. code, vim.log.levels.WARN)
