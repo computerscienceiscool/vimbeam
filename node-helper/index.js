@@ -280,15 +280,15 @@ async function handleMessage(msg) {
 
           // Setup change listener
           setupChangeListener();
-          currentDocId = docId;
+          currentDocId = fullDocId;  // Use full ID with automerge: prefix for awareness matching
 
           // Update awareness client's document ID and broadcast
           if (awarenessClient) {
-            awarenessClient.setDocumentId(docId);
+            awarenessClient.setDocumentId(fullDocId);
           }
           sendAwareness();
 
-          send({ type: 'opened', docId: docId, content: content });
+          send({ type: 'opened', docId: fullDocId, content: content });
           log(`Opened document: ${docId} (${content.length} chars)`);
 
           // Fallback: if initial content was empty, re-check after sync settles
