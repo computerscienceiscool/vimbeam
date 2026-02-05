@@ -498,6 +498,9 @@ function M.open_document(doc_id)
     return
   end
 
+  -- Trim whitespace from document ID
+  doc_id = doc_id and doc_id:match('^%s*(.-)%s*$') or ''
+
   if not doc_id or doc_id == '' then
     vim.notify('[vimbeam] Document ID required', vim.log.levels.ERROR)
     return
