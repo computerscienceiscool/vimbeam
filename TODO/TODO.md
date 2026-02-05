@@ -12,3 +12,4 @@
 - [x] 003 - Create README.md with installation/usage docs
 - [x] 004 - Create docs/PROTOCOL.md documenting JSON message protocol
 - [x] 005 - Rename project from collab-editor-neovim to vimbeam
+- [x] 006 - Ensure helper lifecycle supports Storm + Automerge without orphaned processes
