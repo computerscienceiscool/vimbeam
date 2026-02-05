@@ -243,9 +243,12 @@ end
 
 -- Setup user commands
 function M.setup_commands()
-  vim.api.nvim_create_user_command('BeamConnect', function()
-    M.connect()
-  end, { desc = 'Connect to collaboration server' })
+  vim.api.nvim_create_user_command('BeamConnect', function(opts)
+    local args = vim.split(opts.args, '%s+')
+    local sync_url = args[1] ~= '' and args[1] or nil
+    local awareness_url = args[2] ~= '' and args[2] or nil
+    M.connect(sync_url, awareness_url)
+  end, { desc = 'Connect to collaboration server', nargs = '*' })
 
   vim.api.nvim_create_user_command('BeamDisconnect', function()
     M.disconnect()
@@ -401,7 +404,7 @@ function M.show_color_picker()
 end
 
 -- Connect to collaboration server
-function M.connect()
+function M.connect(sync_url, awareness_url)
   if M.state.connected then
     vim.notify('[vimbeam] Already connected', vim.log.levels.WARN)
     return
@@ -443,8 +446,8 @@ function M.connect()
   -- Send connect message
   M.send({
     type = 'connect',
-    syncUrl = M.config.sync_url,
-    awarenessUrl = M.config.awareness_url,
+    syncUrl = sync_url or M.config.sync_url,
+    awarenessUrl = awareness_url or M.config.awareness_url,
     name = M.config.user_name,
     color = M.config.user_color,
   })
