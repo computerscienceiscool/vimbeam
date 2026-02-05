@@ -219,9 +219,14 @@ async function handleMessage(msg) {
 
         const docId = handle.documentId;
         currentDocId = docId;
-        
+
         // Setup change listener
         setupChangeListener();
+
+        // Update awareness client's document ID and broadcast
+        if (awarenessClient) {
+          awarenessClient.setDocumentId(docId);
+        }
         sendAwareness();
 
         send({ type: 'created', docId: docId });
@@ -276,6 +281,11 @@ async function handleMessage(msg) {
           // Setup change listener
           setupChangeListener();
           currentDocId = docId;
+
+          // Update awareness client's document ID and broadcast
+          if (awarenessClient) {
+            awarenessClient.setDocumentId(docId);
+          }
           sendAwareness();
 
           send({ type: 'opened', docId: docId, content: content });
