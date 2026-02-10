@@ -1,15 +1,15 @@
-# Integration Plan: Vimbeam Storm Mode
+# Integration Plan: Viduct Storm Mode
 
 ## Overview
 
-Add Storm LLM chat capabilities to vimbeam while maintaining full compatibility with existing Automerge collaborative editing.
+Add Storm LLM chat capabilities to viduct while maintaining full compatibility with existing Automerge collaborative editing.
 
 ## Architecture: Three Independent Pieces
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                         Neovim (Lua)                        │
-│  - Commands (:StormConnect, :BeamConnect, etc.)             │
+│  - Commands (:StormConnect, :DuctConnect, etc.)             │
 │  - Buffers (collaborative docs, chat display)               │
 │  - State management (mode: 'automerge' | 'storm' | null)    │
 └─────────────────┬───────────────────────────────────────────┘
@@ -61,14 +61,14 @@ Node helper routes messages based on type:
 
 ### Requirement 3: Protocol Translation
 
-Node helper translates between vimbeam and Storm protocols:
+Node helper translates between viduct and Storm protocols:
 
-**Vimbeam → Storm:**
+**Viduct → Storm:**
 - `storm_connect` → open WebSocket to `/project/{projectID}/ws`
 - `storm_query` → send `{type: "query", query: "...", llm: "...", inputFiles: [...], outFiles: [...]}`
 - `storm_disconnect` → close Storm WebSocket
 
-**Storm → Vimbeam:**
+**Storm → Viduct:**
 - `{type: "query", ...}` → forward as `{type: "storm_query", data: {...}}`
 - `{type: "response", ...}` → forward as `{type: "storm_response", data: {...}}`
 - `{type: "filesUpdated", ...}` → forward as `{type: "storm_files_updated", data: {...}}`
@@ -152,12 +152,12 @@ Each mode maintains separate state in Neovim:
 ## Testing Strategy
 
 ### Test 1: Mode Independence
-1. Start with Automerge: `:BeamConnect` → `:BeamCreate` → edit buffer
+1. Start with Automerge: `:DuctConnect` → `:DuctCreate` → edit buffer
 2. Switch to Storm: `:StormConnect test-project` → send query
 3. Verify both buffers remain intact and functional
 4. Disconnect Storm: `:StormDisconnect`
 5. Verify Automerge editing still works
-6. Disconnect Automerge: `:BeamDisconnect`
+6. Disconnect Automerge: `:DuctDisconnect`
 7. Reconnect to Automerge and verify no corruption
 
 ### Test 2: Storm Full Workflow
@@ -175,7 +175,7 @@ Each mode maintains separate state in Neovim:
 12. Verify clean shutdown
 
 ### Test 3: Error Handling
-1. Try `:StormConnect` without `:BeamConnect` first → should error gracefully
+1. Try `:StormConnect` without `:DuctConnect` first → should error gracefully
 2. Try `:StormConnect nonexistent-project` → should show meaningful error
 3. Kill Storm server mid-query → should handle connection loss
 4. Send query with invalid file paths → should error gracefully

@@ -25,7 +25,7 @@ let repo = null;
 let handle = null;
 let awarenessClient = null;
 let userId = null;
-let userName = 'vimbeam-user';
+let userName = 'viduct-user';
 let userColor = '#88cc88';
 let currentDocId = null;
 let isApplyingRemote = false;
@@ -33,7 +33,7 @@ let currentSelection = { anchor: 0 };
 let changeHandler = null;  // Track change listener for cleanup
 
 // Storage directory for Automerge data
-const storageDir = path.join(os.homedir(), '.local', 'share', 'vimbeam', 'automerge-data');
+const storageDir = path.join(os.homedir(), '.local', 'share', 'viduct', 'automerge-data');
 
 // Ensure storage directory exists
 if (!fs.existsSync(storageDir)) {
@@ -88,7 +88,7 @@ function contentToString(doc) {
  * Generate a simple user ID
  */
 function generateUserId() {
-  return 'beam-' + Math.random().toString(36).substring(2, 10);
+  return 'duct-' + Math.random().toString(36).substring(2, 10);
 }
 
 /**
@@ -352,7 +352,7 @@ async function handleMessage(msg) {
       }
 
       case 'set_name': {
-        userName = msg.name || 'vimbeam-user';
+        userName = msg.name || 'viduct-user';
         if (awarenessClient) {
           awarenessClient.setName(userName);
         }
