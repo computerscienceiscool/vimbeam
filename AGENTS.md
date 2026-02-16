@@ -39,7 +39,6 @@
 - Keep integer parts globally unique during transition
 
 ### Transition from old format
-- If an existing TODO has no letter prefix (e.g., `015`), treat it as `S015` (Steve's, for historical reasons)
 - When bulk-renaming existing TODO files to add prefixes, use `git mv` in one commit without mixing other work
 
 ### Usage
