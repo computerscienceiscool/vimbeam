@@ -25,10 +25,16 @@
 - Keep tests deterministic; mock external dependencies where possible.
 
 ## TODO Tracking
-- Keep a `TODO/` directory and an index at `TODO/TODO.md`.
-- Number TODOs with 3 digits (e.g., `005`); do not renumber—use the next available number.
-- In `TODO/*`, include numbered checkbox subtasks (e.g., `- [ ] 005.1 describe subtask`).
-- When completing a TODO, check it off in `TODO/TODO.md` (e.g., `- [x] 005 - ...`).
+- Preferred: track work in `TODO/` with an index at `TODO/TODO.md`; number using letter-prefixed IDs (see below); don't renumber; sort by priority.
+- TODO IDs use `LNNN` format (letter prefix + 3 digits), e.g. `S015`, `J016`.
+  - Prefixes correspond to who creates the TODO: `S` = Steve, `J` = JJ.
+  - To determine your prefix: run `git config user.name` and use the first letter (uppercase).
+  - Example: `git config user.name` returns "JJ" → use `J` prefix; returns "Steve" → use `S` prefix.
+- Transition rule: if an existing TODO is referenced without a letter (e.g., `015`), treat it as `S015` (default is Steve).
+- Keep integer parts globally unique during transition: avoid creating both `J001` and `S001` in the same repo until all existing TODOs are renamed.
+- When bulk-renaming existing TODO files to add prefixes, use `git mv` (not `mv`/`rm`) and do the renames in one commit without mixing other work.
+- Mark completion with checkboxes (e.g., `- [ ] J005 - ...` → `- [x] J005 - ...`).
+- Legacy: root `TODO.md` exists for historical reference; update `TODO/TODO.md` going forward.
 
 ## Commit & Pull Request Guidelines
 - Commit subjects are short, imperative, and capitalized (e.g., "Fix cursor sync").
