@@ -25,16 +25,26 @@
 - Keep tests deterministic; mock external dependencies where possible.
 
 ## TODO Tracking
-- Preferred: track work in `TODO/` with an index at `TODO/TODO.md`; number using letter-prefixed IDs (see below); don't renumber; sort by priority.
-- TODO IDs use `LNNN` format (letter prefix + 3 digits), e.g. `S015`, `J016`.
-  - Prefixes correspond to who creates the TODO: `S` = Steve, `J` = JJ.
-  - To determine your prefix: run `git config user.name` and use the first letter (uppercase).
-  - Example: `git config user.name` returns "JJ" → use `J` prefix; returns "Steve" → use `S` prefix.
-- Transition rule: if an existing TODO is referenced without a letter (e.g., `015`), treat it as `S015` (default is Steve).
-- Keep integer parts globally unique during transition: avoid creating both `J001` and `S001` in the same repo until all existing TODOs are renamed.
-- When bulk-renaming existing TODO files to add prefixes, use `git mv` (not `mv`/`rm`) and do the renames in one commit without mixing other work.
-- Mark completion with checkboxes (e.g., `- [ ] J005 - ...` → `- [x] J005 - ...`).
-- Legacy: root `TODO.md` exists for historical reference; update `TODO/TODO.md` going forward.
+- Track work in `TODO/` with an index at `TODO/TODO.md`; number using letter-prefixed IDs; don't renumber; sort by priority.
+
+### Determining YOUR prefix
+- Run `git config user.name` to see your git username
+- Your TODO prefix is the FIRST LETTER (uppercase) of that name
+- Examples for this project:
+  - `git config user.name` → "JJ" → use prefix `J` (create J001, J002, etc.)
+  - `git config user.name` → "Steve" → use prefix `S` (create S001, S002, etc.)
+
+### TODO ID format
+- Use `LNNN` format: letter prefix + 3 digits (e.g., J015, S016)
+- Keep integer parts globally unique during transition
+
+### Transition from old format
+- If an existing TODO has no letter prefix (e.g., `015`), treat it as `S015` (Steve's, for historical reasons)
+- When bulk-renaming existing TODO files to add prefixes, use `git mv` in one commit without mixing other work
+
+### Usage
+- Mark completion with checkboxes: `- [ ] J005 - ...` → `- [x] J005 - ...`
+- Legacy: root `TODO.md` exists for historical reference; update `TODO/TODO.md` going forward
 
 ## Commit & Pull Request Guidelines
 - Commit subjects are short, imperative, and capitalized (e.g., "Fix cursor sync").
