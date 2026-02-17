@@ -104,7 +104,7 @@ function connectAwareness(url) {
     userId: userId,
     name: userName,
     color: userColor,
-    documentId: currentDocId || 'default'
+    documentId: currentDocId || undefined
   });
 
   awarenessClient.on('connected', () => {
@@ -218,14 +218,15 @@ async function handleMessage(msg) {
         });
 
         const docId = handle.documentId;
-        currentDocId = docId;
+        const fullDocId = docId.startsWith('automerge:') ? docId : `automerge:${docId}`;
+        currentDocId = fullDocId;
 
         // Setup change listener
         setupChangeListener();
 
         // Update awareness client's document ID and broadcast
         if (awarenessClient) {
-          awarenessClient.setDocumentId(docId);
+          awarenessClient.setDocumentId(fullDocId);
         }
         sendAwareness();
 
