@@ -22,6 +22,7 @@ import { AwarenessClientNode } from '@collab-editor/awareness/node';
 
 // State
 let repo = null;
+let networkAdapter = null;
 let handle = null;
 let awarenessClient = null;
 let userId = null;
@@ -109,6 +110,7 @@ function connectAwareness(url) {
 
   awarenessClient.on('connected', () => {
     log('Awareness connected');
+    send({ type: 'awareness_status', connected: true });
   });
 
   awarenessClient.on('cursor', (data) => {
@@ -126,6 +128,7 @@ function connectAwareness(url) {
 
   awarenessClient.on('disconnected', () => {
     log('Awareness disconnected');
+    send({ type: 'awareness_status', connected: false });
   });
 
   awarenessClient.on('error', (err) => {
@@ -169,8 +172,20 @@ async function handleMessage(msg) {
         }
         
         // Create Automerge repo with WebSocket sync
+        networkAdapter = new BrowserWebSocketClientAdapter(msg.syncUrl);
+
+        // Forward sync connection status to Neovim
+        networkAdapter.on('peer-disconnected', () => {
+          log('Sync server disconnected');
+          send({ type: 'sync_status', connected: false });
+        });
+        networkAdapter.on('peer-candidate', () => {
+          log('Sync server reconnected');
+          send({ type: 'sync_status', connected: true });
+        });
+
         repo = new Repo({
-          network: [new BrowserWebSocketClientAdapter(msg.syncUrl)],
+          network: [networkAdapter],
           storage: new NodeFSStorageAdapter(storageDir),
         });
 
@@ -196,6 +211,10 @@ async function handleMessage(msg) {
         if (awarenessClient) {
           awarenessClient.destroy();
           awarenessClient = null;
+        }
+        if (networkAdapter) {
+          networkAdapter.disconnect();
+          networkAdapter = null;
         }
         if (repo) {
           repo = null;

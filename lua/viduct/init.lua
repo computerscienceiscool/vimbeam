@@ -7,6 +7,8 @@ local M = {}
 -- Plugin state
 M.state = {
   connected = false,
+  sync_connected = false,
+  awareness_connected = false,
   doc_id = nil,
   user_id = nil,
   job_id = nil,
@@ -561,6 +563,7 @@ function M.handle_message(msg)
 
   if msg.type == 'connected' then
     M.state.connected = true
+    M.state.sync_connected = true
     M.state.user_id = msg.userId
     vim.notify('[viduct] Connected as ' .. msg.userId, vim.log.levels.INFO)
     if M.state.after_connect then
@@ -571,6 +574,8 @@ function M.handle_message(msg)
 
   elseif msg.type == 'disconnected' then
     M.state.connected = false
+    M.state.sync_connected = false
+    M.state.awareness_connected = false
     M.state.doc_id = nil
     vim.notify('[viduct] Disconnected', vim.log.levels.INFO)
     M.state.after_connect = nil
@@ -602,10 +607,28 @@ function M.handle_message(msg)
       vim.notify('[viduct] Cursor from ' .. (msg.name or msg.userId), vim.log.levels.DEBUG)
     end
 
+  elseif msg.type == 'sync_status' then
+    M.state.sync_connected = msg.connected
+    if msg.connected then
+      vim.notify('[viduct] Sync server reconnected', vim.log.levels.INFO)
+    else
+      vim.notify('[viduct] Sync server disconnected', vim.log.levels.WARN)
+    end
+
+  elseif msg.type == 'awareness_status' then
+    M.state.awareness_connected = msg.connected
+    if msg.connected then
+      vim.notify('[viduct] Awareness server reconnected', vim.log.levels.INFO)
+    else
+      vim.notify('[viduct] Awareness server disconnected', vim.log.levels.WARN)
+    end
+
   elseif msg.type == 'info' then
     local info = string.format(
-      '[viduct] Connected: %s | Doc: %s | User: %s',
+      '[viduct] Connected: %s | Sync: %s | Awareness: %s | Doc: %s | User: %s',
       tostring(msg.connected),
+      M.state.sync_connected and 'up' or 'down',
+      M.state.awareness_connected and 'up' or 'down',
       msg.docId or 'none',
       msg.userName or 'unknown'
     )
